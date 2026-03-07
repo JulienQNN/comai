@@ -30,6 +30,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/JulienQNN/comai/internal/config"
+	"github.com/JulienQNN/comai/internal/git"
 )
 
 var generateCmd = &cobra.Command{
@@ -61,7 +62,20 @@ var generateCmd = &cobra.Command{
 
 		config.PrintConfig(cfg, verbose)
 
-		// 3. Suite de ta logique (Git diff, Appel IA...)
+		// Get staged diff
+		diff, err := git.GetStagedDiff()
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			return
+		}
+
+		fmt.Printf("\n📊 %d file(s) changed | +%d -%d\n",
+			diff.Stats.FilesChanged, diff.Stats.Insertions, diff.Stats.Deletions)
+		for _, f := range diff.Files {
+			fmt.Printf("  [%s] %s\n", f.Status, f.Path)
+		}
+
+		// TODO: Send diff.RawDiff to AI for commit message generation
 	},
 }
 
