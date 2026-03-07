@@ -1,24 +1,3 @@
-/*
-Copyright © 2026 Julien QUENNEHEN <julienqhn@proton.me>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
 package cmd
 
 import (
@@ -68,11 +47,11 @@ var generateCmd = &cobra.Command{
 			fmt.Printf("Error: %v\n", err)
 			return
 		}
-
-		fmt.Printf("\n📊 %d file(s) changed | +%d -%d\n",
-			diff.Stats.FilesChanged, diff.Stats.Insertions, diff.Stats.Deletions)
+		fmt.Println()
+		fmt.Println(diff.Stats)
+		fmt.Println()
 		for _, f := range diff.Files {
-			fmt.Printf("  [%s] %s\n", f.Status, f.Path)
+			fmt.Printf("[%s] %s\n", f.Status, f.Path)
 		}
 
 		// TODO: Send diff.RawDiff to AI for commit message generation
