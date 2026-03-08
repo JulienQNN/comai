@@ -1,0 +1,4 @@
+custom_instructions: '<type>(<optional scope>): <description>'
+language: en
+model: qwen3.5:4b
+provider: ollama
