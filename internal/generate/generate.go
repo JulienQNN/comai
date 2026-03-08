@@ -54,7 +54,7 @@ func (m model) View() string {
 			errStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 			return fmt.Sprintf("%s %s\n", errStyle.Render("✗ Error:"), m.err.Error())
 		}
-		return fmt.Sprintf("✓ Generated in %s\n", timerStyle.Render(elapsed.String()))
+		return fmt.Sprintf("Generated in %s\n", timerStyle.Render(elapsed.String()))
 	}
 
 	return fmt.Sprintf("%s Generating commit message... %s",

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
@@ -77,8 +78,10 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
+		commitMsg := strings.ToLower(result.CommitMsg)
+
 		fmt.Println()
-		fmt.Println(result.CommitMsg)
+		fmt.Println(commitMsg)
 
 		confirmed := false
 		form := huh.NewForm(
@@ -99,7 +102,7 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
-		if err := git.Commit(result.CommitMsg); err != nil {
+		if err := git.Commit(commitMsg); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			return
 		}
