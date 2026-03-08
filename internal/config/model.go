@@ -28,8 +28,19 @@ func PrintConfig(cfg Config, verbose bool) {
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s %s\n", keyStyle.Render("Provider:"), valStyle.Render(cfg.ProviderName))
 	fmt.Fprintf(&b, "%s %s\n", keyStyle.Render("Model:"), valStyle.Render(cfg.ModelName))
+	fmt.Fprintf(
+		&b,
+		"%s %s\n",
+		keyStyle.Render("Commit Max Length:"),
+		valStyle.Render(cfg.MaxLength),
+	)
 	fmt.Fprintf(&b, "%s %s\n", keyStyle.Render("Language:"), valStyle.Render(cfg.Language))
-	fmt.Fprintf(&b, "%s %s", keyStyle.Render("Instructions:"), valStyle.Render(cfg.CustomInstructions))
+	fmt.Fprintf(
+		&b,
+		"%s %s",
+		keyStyle.Render("Instructions:"),
+		valStyle.Render(cfg.CustomInstructions),
+	)
 
 	fmt.Println(titleStyle.Render(" ComAI Generate"))
 	if verbose {
