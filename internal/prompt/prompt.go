@@ -12,7 +12,9 @@ func Build(diff string, cfg config.Config) CompletionParams {
 		diff = diff[:maxDiffLen] + "\n...(truncated)"
 	}
 
-	system := fmt.Sprintf("Output ONLY a git commit message. Language: %s.", cfg.Language)
+	system := fmt.Sprintf(
+		"Output ONLY a git commit message in lowercase. MaxLength: %v Language: %s.",
+		cfg.MaxLength, cfg.Language)
 	if cfg.CustomInstructions != "" {
 		system += " " + cfg.CustomInstructions
 	}
