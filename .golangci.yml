@@ -1,0 +1,21 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - errcheck       # unchecked errors
+    - gosimple       # simplifications
+    - govet          # go vet checks
+    - ineffassign    # unused assignments
+    - staticcheck    # static analysis
+    - unused         # unused code
+    - gofmt          # formatting
+    - goimports      # import ordering
+    - gocritic       # opinionated checks
+    - misspell       # typos in comments/strings
+    - noctx          # http calls without context
+    - bodyclose      # unclosed http response bodies
+
+issues:
+  max-same-issues: 0
+  max-issues-per-linter: 0

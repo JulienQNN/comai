@@ -1,0 +1,137 @@
+version: 2
+
+project_name: comai
+
+before:
+  hooks:
+    - go mod tidy
+    - mkdir -p completions
+    - go run main.go completion bash > completions/comai.bash
+    - go run main.go completion zsh > completions/comai.zsh
+    - go run main.go completion fish > completions/comai.fish
+
+builds:
+  - id: binaries
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - freebsd
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - "386"
+    goarm:
+      - "7"
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+      - -X main.GitCommit={{.ShortCommit}}
+      - -X main.BuildDate={{.Date}}
+      - -X main.GitBranch={{.Branch}}
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  use: git
+  sort: asc
+  filters:
+    exclude:
+      - "^Merge"
+      - "^merge"
+
+homebrew_casks:
+  - name: comai
+    repository:
+      owner: JulienQNN
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: "https://github.com/JulienQNN/comai"
+    description: "Use AI to write your git commit messages and more"
+    license: MIT
+    completions:
+      bash: "completions/comai.bash"
+      zsh: "completions/comai.zsh"
+      fish: "completions/comai.fish"
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/comai"]
+          end
+
+winget:
+  - name: comai
+    repository:
+      owner: JulienQNN
+      name: winget-pkgs
+      branch: main
+      token: "{{ .Env.WINGET_GITHUB_TOKEN }}"
+    publisher: JulienQNN
+    package_identifier: "JulienQNN.comai"
+    license: "MIT"
+    publisher_url: "https://github.com/JulienQNN/comai"
+    short_description: "Use AI to write your git commit messages and more"
+
+nfpms:
+  - id: packages
+    package_name: comai
+    vendor: JulienQNN
+    maintainer: "JulienQNN"
+    homepage: "https://github.com/JulienQNN/comai"
+    description: "Use AI to write your git commit messages"
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - archlinux
+    contents:
+      - src: completions/comai.bash
+        dst: /usr/share/bash-completion/completions/comai
+      - src: completions/comai.zsh
+        dst: /usr/share/zsh/vendor-completions/_comai
+      - src: completions/comai.fish
+        dst: /usr/share/fish/vendor_completions.d/comai.fish
+
+
+chocolateys:
+  - name: comai
+    owners: JulienQNN
+    title: comai
+    authors: JulienQNN
+    project_url: "https://github.com/JulienQNN/comai"
+    license_url: "https://github.com/JulienQNN/comai/blob/main/LICENSE"
+    project_source_url: "https://github.com/JulienQNN/comai"
+    docs_url: "https://github.com/JulienQNN/comai/blob/main/README.md"
+    bug_tracker_url: "https://github.com/JulienQNN/comai/issues"
+    tags: "ai git commit cli"
+    summary: "Use AI to write your git commit messages"
+    description: "Use AI to write your git commit messages and more"
+    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
+    source_repo: "https://push.chocolatey.org/"
+
+release:
+  github:
+    owner: JulienQNN
+    name: comai
+  draft: false
+  prerelease: auto
+  name_template: "{{ .Tag }}"
