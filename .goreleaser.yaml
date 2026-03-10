@@ -51,7 +51,7 @@ checksum:
 
 changelog:
   use: github
-  format: "{{ .SHA }}: {{ .Message }}{{ if .Logins }} ({{ .Logins | englishJoin }}){{ end }}"
+  format: "{{ .SHA }}: {{ .Message }} ({{ with .Author.Username }}@{{ . }}{{ else }}{{ .Author.Name }} <{{ .Author.Email }}>{{ end }})"
   filters:
     exclude:
       - "^docs:"
