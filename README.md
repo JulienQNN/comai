@@ -1,6 +1,6 @@
 # comai
 
-Generate git commit messages with a local AI model.
+Generate git commit messages with AI model.
 
 ## Installation
 
@@ -15,11 +15,6 @@ brew install comai
 **Winget** (Windows)
 ```bash
 winget install JulienQNN.comai
-```
-
-**Chocolatey** (Windows)
-```bash
-choco install comai
 ```
 
 ### Manual install
