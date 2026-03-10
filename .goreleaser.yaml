@@ -50,6 +50,7 @@ checksum:
 
 changelog:
   use: github
+  format: "{{ .SHA }}: {{ .Message }}{{ if .Logins }} ({{ .Logins | englishJoin }}){{ end }}"
   filters:
     exclude:
       - "^docs:"
