@@ -6,9 +6,7 @@ before:
   hooks:
     - go mod tidy
     - mkdir -p completions
-    - go run main.go completion bash > completions/comai.bash
-    - go run main.go completion zsh > completions/comai.zsh
-    - go run main.go completion fish > completions/comai.fish
+    - sh -c 'for shell in bash zsh fish; do go run . completion $shell > completions/comai.$shell; done'
 
 builds:
   - id: binaries
@@ -51,12 +49,26 @@ checksum:
   name_template: "checksums.txt"
 
 changelog:
-  use: git
-  sort: asc
+  use: github
   filters:
     exclude:
-      - "^Merge"
-      - "^merge"
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - typo
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+      - go mod tidy
+  groups:
+    - title: "New Features"
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: "Bug fixes"
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 10
+    - title: Other work
+      order: 999
 
 homebrew_casks:
   - name: comai
@@ -110,23 +122,10 @@ nfpms:
         dst: /usr/share/zsh/vendor-completions/_comai
       - src: completions/comai.fish
         dst: /usr/share/fish/vendor_completions.d/comai.fish
-
-
-chocolateys:
-  - name: comai
-    owners: JulienQNN
-    title: comai
-    authors: JulienQNN
-    project_url: "https://github.com/JulienQNN/comai"
-    license_url: "https://github.com/JulienQNN/comai/blob/main/LICENSE"
-    project_source_url: "https://github.com/JulienQNN/comai"
-    docs_url: "https://github.com/JulienQNN/comai/blob/main/README.md"
-    bug_tracker_url: "https://github.com/JulienQNN/comai/issues"
-    tags: "ai git commit cli"
-    summary: "Use AI to write your git commit messages"
-    description: "Use AI to write your git commit messages and more"
-    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
-    source_repo: "https://push.chocolatey.org/"
+      - src: README.md
+        dst: /usr/share/doc/comai/README.md
+      - src: LICENSE
+        dst: /usr/share/doc/comai/LICENSE
 
 release:
   github:
