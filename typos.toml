@@ -1,0 +1,11 @@
+[files]
+extend-exclude = [
+    "*.snap",
+    "*.sum",
+    "*.mod",
+    "*.csv",
+    "result.json"
+]
+
+[default.extend-words]
+typ = "typ"
