@@ -31,6 +31,5 @@ func SaveConfig(cfg Config, isGlobal bool) error {
 		return fmt.Errorf("error writing config file: %w", err)
 	}
 
-	fmt.Println("Config file saved at :", configPath)
 	return nil
 }

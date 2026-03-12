@@ -52,7 +52,7 @@ func GetStagedDiff() (*DiffResult, error) {
 
 	stats, err := getShortStats()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get staged diff: %w", err)
+		return nil, fmt.Errorf("failed to get staged diff short stats: %w", err)
 	}
 
 	rawDiff, err := runGit("diff", "--staged")

@@ -9,6 +9,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -29,56 +30,54 @@ var generateCmd = &cobra.Command{
 		dateFlag, _ := cmd.Flags().GetString("date")
 		dateInteractive, _ := cmd.Flags().GetBool("date-interactive")
 
+		if dateFlag != "" {
+			if _, err := git.ParseDate(dateFlag); err != nil {
+				log.Error("parsing date", "err", err)
+				return
+			}
+		}
+
 		if isGlobal {
 			home, err := os.UserHomeDir()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error getting home directory: %v\n", err)
+				log.Error("getting home directory", "err", err)
 				return
 			}
 			viper.SetConfigFile(filepath.Join(home, ".comai.yaml"))
 			if err := viper.ReadInConfig(); err != nil {
-				fmt.Fprintf(os.Stderr, "Error loading global config: %v\n", err)
+				log.Error("getting home directory", "err", err)
 				return
 			}
 		}
 
 		var cfg config.Config
 		if err := viper.Unmarshal(&cfg); err != nil {
-			fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
+			log.Error("loading config", "err", err)
 			return
 		}
 
 		config.PrintConfig(cfg, verbose)
-
 		diff, err := git.GetStagedDiff()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error("getting git diff", "err", err)
 			return
 		}
-		fmt.Println()
+
 		fmt.Println(diff.Stats)
-		fmt.Println()
+
 		for _, f := range diff.Files {
 			fmt.Printf("[%s] %s\n", f.Status, f.Path)
 		}
 
 		p, err := provider.New(cfg.ModelName)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating provider: %v\n", err)
+			log.Error("creating provider", "err", err)
 			return
 		}
 
 		result, err := generate.Start(p, prompt.Build(diff.RawDiff, cfg))
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			return
-		}
-		if result.Err != nil {
-			fmt.Fprintf(os.Stderr, "Error generating commit message: %v\n", result.Err)
-			return
-		}
-		if result.CommitMsg == "" {
-			fmt.Fprintf(os.Stderr, "Error: empty response from LLM\n")
+			log.Error("generating commit message", "err", err)
 			return
 		}
 
@@ -86,7 +85,7 @@ var generateCmd = &cobra.Command{
 
 		author, err := git.GetAuthorInfo()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error("getting author info", "err", err)
 			return
 		}
 
@@ -108,19 +107,21 @@ var generateCmd = &cobra.Command{
 		if dateInteractive {
 			dateDisplay = "to be defined"
 		} else if dateFlag != "" {
-			dateDisplay = dateFlag
+			t, err := git.ParseDate(dateFlag)
+			if err != nil {
+				log.Error("parsing date", "err", err)
+				return
+			}
+			dateDisplay = t.Format("2006-01-02 15:04:05")
 		}
 
-		fmt.Println()
 		fmt.Println(titleCommit + titleSep)
-		fmt.Println()
 		fmt.Println(commitStyle.Render(commitMsg))
-		fmt.Println()
 		fmt.Println(italicStyle.Render(fmt.Sprintf(" %s <%s>", author.Name, author.Email)))
 		fmt.Println(italicStyle.Render(fmt.Sprintf(" %s", dateDisplay)))
 
 		confirmed := false
-		if err := huh.NewForm(
+		form := huh.NewForm(
 			huh.NewGroup(
 				huh.NewConfirm().
 					Title("Commit with this message ?").
@@ -128,12 +129,13 @@ var generateCmd = &cobra.Command{
 					Negative("Cancel").
 					Value(&confirmed),
 			),
-		).Run(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		)
+		if err := form.Run(); err != nil {
+			log.Error("running confirmation form", "err", err)
 			return
 		}
 		if !confirmed {
-			fmt.Println("Cancelled")
+			log.Info("Commit cancelled by user")
 			return
 		}
 
@@ -152,10 +154,10 @@ var generateCmd = &cobra.Command{
 		}
 
 		if err := git.Commit(commitMsg, git.CommitOptions{Date: dateFlag}); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error("committing changes", "err", err)
 			return
 		}
-		fmt.Println("Committed !")
+		log.Info("Changes committed successfully")
 	},
 }
 
