@@ -14,7 +14,7 @@ func getShortStats() (string, error) {
 }
 
 func getFilesWithStatus() ([]FileDiff, error) {
-	output, err := runGit("diff", "--staged", "--name-status")
+	output, err := runGit("diff", "--staged", "--find-copies", "--name-status")
 	if err != nil {
 		return nil, err
 	}
@@ -24,11 +24,11 @@ func getFilesWithStatus() ([]FileDiff, error) {
 		"M": "MODIFY",
 		"D": "DELETE",
 		"R": "RENAME",
-		"C": "MODIFY",
+		"C": "COPY",
 	}
 
 	var files []FileDiff
-	for _, line := range strings.Split(strings.TrimSpace(output), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(output), "\n") {
 		if line == "" {
 			continue
 		}
