@@ -1,55 +1,34 @@
 package git
 
 import (
+	"context"
 	"fmt"
+	"os/exec"
+	"strings"
 	"time"
 
-	gogit "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	anytime "github.com/ijt/go-anytime"
 )
 
 func Commit(message string, opts CommitOptions) error {
-	t := time.Now()
+	args := []string{"commit", "-m", message}
 
 	if opts.Date != "" {
-		parsed, err := anytime.Parse(opts.Date, time.Now(), anytime.DefaultToPast)
+		t, err := anytime.Parse(opts.Date, time.Now(), anytime.DefaultToPast)
 		if err != nil {
-			parsed, err = time.Parse("2006-01-02", opts.Date)
+			t, err = time.Parse("2006-01-02", opts.Date)
 			if err != nil {
 				return fmt.Errorf("invalid date %q: %w", opts.Date, err)
 			}
 		}
-		t = parsed
+		args = append(args, "--date", t.Format(time.RFC3339))
 	}
 
-	repo, err := openRepo()
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, "git", args...).CombinedOutput()
 	if err != nil {
-		return err
-	}
-
-	author, err := resolveAuthor(repo)
-	if err != nil {
-		return err
-	}
-
-	w, err := repo.Worktree()
-	if err != nil {
-		return fmt.Errorf("failed to get worktree: %w", err)
-	}
-
-	sig := &object.Signature{
-		Name:  author.Name,
-		Email: author.Email,
-		When:  t,
-	}
-
-	_, err = w.Commit(message, &gogit.CommitOptions{
-		Author:    sig,
-		Committer: sig,
-	})
-	if err != nil {
-		return fmt.Errorf("git commit failed: %w", err)
+		return fmt.Errorf("git commit failed: %s", strings.TrimSpace(string(out)))
 	}
 	return nil
 }

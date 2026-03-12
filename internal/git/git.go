@@ -6,9 +6,6 @@ import (
 	"os/exec"
 	"strings"
 	"time"
-
-	gogit "github.com/go-git/go-git/v5"
-	gogitconfig "github.com/go-git/go-git/v5/config"
 )
 
 func runGit(args ...string) (string, error) {
@@ -22,33 +19,24 @@ func runGit(args ...string) (string, error) {
 	return string(out), nil
 }
 
-func openRepo() (*gogit.Repository, error) {
-	repo, err := gogit.PlainOpenWithOptions(".", &gogit.PlainOpenOptions{
-		DetectDotGit: true,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("you are not in a git repository")
+func checkGitRepo() error {
+	if _, err := runGit("rev-parse", "--git-dir"); err != nil {
+		return fmt.Errorf("you are not in a git repository")
 	}
-	return repo, nil
-}
-
-func resolveAuthor(repo *gogit.Repository) (AuthorInfo, error) {
-	local, err := repo.Config()
-	if err == nil && local.User.Name != "" {
-		return AuthorInfo{Name: local.User.Name, Email: local.User.Email}, nil
-	}
-
-	global, err := gogitconfig.LoadConfig(gogitconfig.GlobalScope)
-	if err != nil {
-		return AuthorInfo{}, fmt.Errorf("failed to read git config: %w", err)
-	}
-	return AuthorInfo{Name: global.User.Name, Email: global.User.Email}, nil
+	return nil
 }
 
 func GetAuthorInfo() (AuthorInfo, error) {
-	repo, err := openRepo()
+	name, err := runGit("config", "user.name")
 	if err != nil {
-		return AuthorInfo{}, err
+		return AuthorInfo{}, fmt.Errorf("failed to read git user name: %w", err)
 	}
-	return resolveAuthor(repo)
+	email, err := runGit("config", "user.email")
+	if err != nil {
+		return AuthorInfo{}, fmt.Errorf("failed to read git user email: %w", err)
+	}
+	return AuthorInfo{
+		Name:  strings.TrimSpace(name),
+		Email: strings.TrimSpace(email),
+	}, nil
 }

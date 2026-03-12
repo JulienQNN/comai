@@ -3,8 +3,6 @@ package git
 import (
 	"fmt"
 	"strings"
-
-	gogit "github.com/go-git/go-git/v5"
 )
 
 func getShortStats() (string, error) {
@@ -15,49 +13,46 @@ func getShortStats() (string, error) {
 	return strings.TrimSpace(shortstat), nil
 }
 
-func getFilesWithStatus(repo *gogit.Repository) ([]FileDiff, error) {
-	w, err := repo.Worktree()
+func getFilesWithStatus() ([]FileDiff, error) {
+	output, err := runGit("diff", "--staged", "--name-status")
 	if err != nil {
-		return nil, fmt.Errorf("failed to get worktree: %w", err)
+		return nil, err
 	}
 
-	status, err := w.Status()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get git status: %w", err)
-	}
-
-	statusMap := map[gogit.StatusCode]string{
-		gogit.Added:    "NEW",
-		gogit.Modified: "MODIFY",
-		gogit.Deleted:  "DELETE",
-		gogit.Renamed:  "RENAME",
-		gogit.Copied:   "MODIFY",
+	statusMap := map[string]string{
+		"A": "NEW",
+		"M": "MODIFY",
+		"D": "DELETE",
+		"R": "RENAME",
+		"C": "MODIFY",
 	}
 
 	var files []FileDiff
-	for path, s := range status {
-		if s.Staging == gogit.Unmodified || s.Staging == gogit.Untracked {
+	for _, line := range strings.Split(strings.TrimSpace(output), "\n") {
+		if line == "" {
 			continue
 		}
-		label, ok := statusMap[s.Staging]
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			continue
+		}
+		label, ok := statusMap[string(fields[0][0])]
 		if !ok {
 			label = "MODIFY"
 		}
-		files = append(files, FileDiff{Status: label, Path: path})
+		files = append(files, FileDiff{Status: label, Path: fields[len(fields)-1]})
 	}
-
 	return files, nil
 }
 
 func GetStagedDiff() (*DiffResult, error) {
-	repo, err := openRepo()
-	if err != nil {
+	if err := checkGitRepo(); err != nil {
 		return nil, err
 	}
 
 	stats, err := getShortStats()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get staged diff with --shortstat: %w", err)
+		return nil, fmt.Errorf("failed to get staged diff: %w", err)
 	}
 
 	rawDiff, err := runGit("diff", "--staged")
@@ -70,7 +65,8 @@ func GetStagedDiff() (*DiffResult, error) {
 	}
 
 	result := &DiffResult{RawDiff: rawDiff, Stats: stats}
-	result.Files, err = getFilesWithStatus(repo)
+
+	result.Files, err = getFilesWithStatus()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get file list: %w", err)
 	}
