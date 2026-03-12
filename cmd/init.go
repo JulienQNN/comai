@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 
 	"github.com/JulienQNN/comai/internal/config"
@@ -18,8 +16,7 @@ var initCmd = &cobra.Command{
 
 		result, err := wizard.Start(isGlobal)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
+			log.Fatal("during configuration wizard", "err", err)
 		}
 
 		cfg := config.Config{
@@ -31,9 +28,10 @@ var initCmd = &cobra.Command{
 		}
 
 		if err := config.SaveConfig(cfg, isGlobal); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
+			log.Fatal("saving configuration", "err", err)
 		}
+
+		// TODO print success message with config path
 	},
 }
 

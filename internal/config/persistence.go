@@ -28,9 +28,8 @@ func SaveConfig(cfg Config, isGlobal bool) error {
 	v.Set("custom_instructions", cfg.CustomInstructions)
 
 	if err := v.WriteConfigAs(configPath); err != nil {
-		return fmt.Errorf("error writing config file: %w", err)
+		return fmt.Errorf("writing config file: %w", err)
 	}
 
-	fmt.Println("Config file saved at :", configPath)
 	return nil
 }

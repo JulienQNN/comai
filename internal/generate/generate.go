@@ -46,19 +46,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
-	timerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-
 	if m.done {
 		if m.err != nil {
-			errStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
-			return fmt.Sprintf("%s %s\n", errStyle.Render("✗ Error:"), m.err.Error())
+			return ""
 		}
-		return fmt.Sprintf("Generated in %s\n", timerStyle.Render(elapsed.String()))
+		elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
+		return fmt.Sprintf("Generated in %s\n", elapsed.String())
 	}
 
-	return fmt.Sprintf("%s Generating commit message... %s",
-		m.spinner.View(), timerStyle.Render(elapsed.String()))
+	elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
+	return fmt.Sprintf("%s Generating commit message... %s", m.spinner.View(), elapsed.String())
 }
 
 // Start launches the spinner TUI and calls the LLM.
@@ -81,11 +78,15 @@ func Start(p provider.Provider, params prompt.CompletionParams) (Result, error) 
 
 	gm, ok := result.(model)
 	if !ok {
-		return Result{}, fmt.Errorf("unexpected internal state")
+		return Result{}, fmt.Errorf("unexpected result type from TUI program")
 	}
+
+	if gm.err != nil {
+		return Result{}, gm.err
+	}
+
 	return Result{
 		CommitMsg: gm.result,
 		Elapsed:   time.Since(m.start),
-		Err:       gm.err,
 	}, nil
 }

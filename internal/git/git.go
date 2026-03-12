@@ -20,9 +20,23 @@ func runGit(args ...string) (string, error) {
 }
 
 func checkGitRepo() error {
-	_, err := runGit("tag")
-	if err != nil {
+	if _, err := runGit("rev-parse", "--git-dir"); err != nil {
 		return fmt.Errorf("you are not in a git repository")
 	}
 	return nil
+}
+
+func GetAuthorInfo() (AuthorInfo, error) {
+	name, err := runGit("config", "user.name")
+	if err != nil {
+		return AuthorInfo{}, fmt.Errorf("failed to read git user name: %w", err)
+	}
+	email, err := runGit("config", "user.email")
+	if err != nil {
+		return AuthorInfo{}, fmt.Errorf("failed to read git user email: %w", err)
+	}
+	return AuthorInfo{
+		Name:  strings.TrimSpace(name),
+		Email: strings.TrimSpace(email),
+	}, nil
 }
