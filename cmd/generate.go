@@ -108,8 +108,8 @@ var generateCmd = &cobra.Command{
 
 		fmt.Println(titleCommit + titleSep)
 		fmt.Println(t.CommitBorder.Render(commitMsg))
-		fmt.Println(t.Italic.PaddingBottom(1).Render(fmt.Sprintf(" %s <%s>", author.Name, author.Email)))
-		fmt.Println(t.Italic.Render(fmt.Sprintf(" %s", dateDisplay)))
+		fmt.Println(t.Italic.Render(fmt.Sprintf(" %s <%s>", author.Name, author.Email)))
+		fmt.Println(t.Italic.PaddingBottom(1).Render(fmt.Sprintf(" %s", dateDisplay)))
 
 		confirmed := false
 		form := huh.NewForm(

@@ -5,45 +5,39 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/viper"
+
+	"github.com/JulienQNN/comai/internal/theme"
 )
 
 func PrintConfig(cfg Config, verbose bool) {
-	titleStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("205")).
-		Bold(true).
-		MarginTop(1)
-	subtitleStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("62"))
-
-	borderStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("62")).
-		Padding(0, 1)
-
-	keyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	valStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("15"))
+	t := theme.Default()
 
 	var b strings.Builder
-	fmt.Fprintf(&b, "%s %s\n", keyStyle.Render("Provider:"), valStyle.Render(cfg.ProviderName))
-	fmt.Fprintf(&b, "%s %s\n", keyStyle.Render("Model:"), valStyle.Render(cfg.ModelName))
 	fmt.Fprintf(
 		&b,
 		"%s %s\n",
-		keyStyle.Render("Commit Max Length:"),
-		valStyle.Render(cfg.MaxLength),
+		t.ConfigKey.Render("Provider:"),
+		t.ConfigValue.Render(cfg.ProviderName),
 	)
-	fmt.Fprintf(&b, "%s %s\n", keyStyle.Render("Language:"), valStyle.Render(cfg.Language))
+	fmt.Fprintf(&b, "%s %s\n", t.ConfigKey.Render("Model:"), t.ConfigValue.Render(cfg.ModelName))
+	fmt.Fprintf(
+		&b,
+		"%s %s\n",
+		t.ConfigKey.Render("Commit Max Length:"),
+		t.ConfigValue.Render(cfg.MaxLength),
+	)
+	fmt.Fprintf(&b, "%s %s\n", t.ConfigKey.Render("Language:"), t.ConfigValue.Render(cfg.Language))
 	fmt.Fprintf(
 		&b,
 		"%s %s",
-		keyStyle.Render("Instructions:"),
-		valStyle.Render(cfg.CustomInstructions),
+		t.ConfigKey.Render("Instructions:"),
+		t.ConfigValue.Render(cfg.CustomInstructions),
 	)
 
-	fmt.Println(titleStyle.Render(" ComAI Generate"))
+	fmt.Println(t.ConfigTitle.Render(" ComAI Generate"))
 	if verbose {
+		subtitleStyle := t.Muted
 		usedFile := viper.ConfigFileUsed()
 		if usedFile != "" {
 			fmt.Fprintln(os.Stderr, subtitleStyle.Render(" Using config file:", usedFile))
@@ -55,5 +49,5 @@ func PrintConfig(cfg Config, verbose bool) {
 		}
 	}
 
-	fmt.Println(borderStyle.Render(b.String()))
+	fmt.Println(t.ConfigBorder.Render(b.String()))
 }
