@@ -10,3 +10,12 @@ type DiffResult struct {
 	Stats   string
 	RawDiff string
 }
+
+type CommitOptions struct {
+	Date string
+}
+
+type AuthorInfo struct {
+	Name  string
+	Email string
+}
