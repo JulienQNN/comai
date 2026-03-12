@@ -1,5 +1,5 @@
 custom_instructions: '<type>(<optional scope>): <description>'
 language: en
 max_length: "50"
-model: gemma3:4b
+model: qwen3.5:9b
 provider: ollama
