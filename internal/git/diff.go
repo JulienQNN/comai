@@ -64,7 +64,10 @@ func GetStagedDiff() (*DiffResult, error) {
 		return nil, fmt.Errorf("no staged changes found. Stage your changes with 'git add' first")
 	}
 
-	result := &DiffResult{RawDiff: rawDiff, Stats: stats}
+	result := &DiffResult{
+		RawDiff: rawDiff,
+		Stats:   stats,
+	}
 
 	result.Files, err = getFilesWithStatus()
 	if err != nil {
