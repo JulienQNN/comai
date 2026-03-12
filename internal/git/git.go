@@ -22,8 +22,6 @@ func runGit(args ...string) (string, error) {
 	return string(out), nil
 }
 
-// openRepo opens the git repository from the current working directory.
-// DetectDotGit walks up the directory tree like git does, so it works from any subdirectory.
 func openRepo() (*gogit.Repository, error) {
 	repo, err := gogit.PlainOpenWithOptions(".", &gogit.PlainOpenOptions{
 		DetectDotGit: true,
@@ -34,8 +32,6 @@ func openRepo() (*gogit.Repository, error) {
 	return repo, nil
 }
 
-// resolveAuthor reads user name/email from the local repo config,
-// falling back to the global git config (~/.gitconfig) if not set locally.
 func resolveAuthor(repo *gogit.Repository) (AuthorInfo, error) {
 	local, err := repo.Config()
 	if err == nil && local.User.Name != "" {
@@ -49,7 +45,6 @@ func resolveAuthor(repo *gogit.Repository) (AuthorInfo, error) {
 	return AuthorInfo{Name: global.User.Name, Email: global.User.Email}, nil
 }
 
-// GetAuthorInfo returns the resolved git user identity (local config → global fallback).
 func GetAuthorInfo() (AuthorInfo, error) {
 	repo, err := openRepo()
 	if err != nil {

@@ -5,8 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -24,6 +26,8 @@ var generateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		isGlobal, _ := cmd.Flags().GetBool("global")
+		dateFlag, _ := cmd.Flags().GetString("date")
+		dateInteractive, _ := cmd.Flags().GetBool("date-interactive")
 
 		if isGlobal {
 			home, err := os.UserHomeDir()
@@ -80,11 +84,43 @@ var generateCmd = &cobra.Command{
 
 		commitMsg := strings.ToLower(result.CommitMsg)
 
+		author, err := git.GetAuthorInfo()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			return
+		}
+
+		titleCommit := lipgloss.NewStyle().
+			Bold(true).
+			Foreground(lipgloss.Color("205")).
+			Render("Commit")
+		titleSep := lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render(
+			" - Generated in " + result.Elapsed.Truncate(10*time.Millisecond).String(),
+		)
+		commitStyle := lipgloss.NewStyle().
+			BorderLeft(true).
+			BorderStyle(lipgloss.ThickBorder()).
+			BorderForeground(lipgloss.Color("205")).
+			PaddingLeft(1)
+		italicStyle := lipgloss.NewStyle().Italic(true).Foreground(lipgloss.Color("240"))
+
+		dateDisplay := "now"
+		if dateInteractive {
+			dateDisplay = "to be defined"
+		} else if dateFlag != "" {
+			dateDisplay = dateFlag
+		}
+
 		fmt.Println()
-		fmt.Println(commitMsg)
+		fmt.Println(titleCommit + titleSep)
+		fmt.Println()
+		fmt.Println(commitStyle.Render(commitMsg))
+		fmt.Println()
+		fmt.Println(italicStyle.Render(fmt.Sprintf(" %s <%s>", author.Name, author.Email)))
+		fmt.Println(italicStyle.Render(fmt.Sprintf(" %s", dateDisplay)))
 
 		confirmed := false
-		form := huh.NewForm(
+		if err := huh.NewForm(
 			huh.NewGroup(
 				huh.NewConfirm().
 					Title("Commit with this message ?").
@@ -92,8 +128,7 @@ var generateCmd = &cobra.Command{
 					Negative("Cancel").
 					Value(&confirmed),
 			),
-		)
-		if err := form.Run(); err != nil {
+		).Run(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			return
 		}
@@ -102,7 +137,21 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
-		if err := git.Commit(commitMsg); err != nil {
+		if dateInteractive {
+			if err := huh.NewForm(
+				huh.NewGroup(
+					huh.NewInput().
+						Title("Commit date").
+						Placeholder("e.g. yesterday, 2024-01-01, last friday").
+						Value(&dateFlag),
+				),
+			).Run(); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				return
+			}
+		}
+
+		if err := git.Commit(commitMsg, git.CommitOptions{Date: dateFlag}); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			return
 		}
@@ -115,4 +164,8 @@ func init() {
 	generateCmd.Flags().
 		BoolP("verbose", "v", false, "Show verbose output including config file path")
 	generateCmd.Flags().BoolP("global", "g", false, "Use global configuration")
+	generateCmd.Flags().
+		StringP("date", "d", "", "Override the commit date (e.g. yesterday, \"2024-01-01\", \"last friday\")")
+	generateCmd.Flags().
+		BoolP("date-interactive", "D", false, "Prompt for commit date interactively after confirming")
 }
