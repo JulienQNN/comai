@@ -78,7 +78,7 @@ func Start(p provider.Provider, params prompt.CompletionParams) (Result, error) 
 
 	gm, ok := result.(model)
 	if !ok {
-		return Result{}, fmt.Errorf("Unexpected result type from TUI program")
+		return Result{}, fmt.Errorf("unexpected result type from TUI program")
 	}
 
 	if gm.err != nil {

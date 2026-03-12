@@ -31,7 +31,7 @@ var initCmd = &cobra.Command{
 			log.Fatal("saving configuration", "err", err)
 		}
 
-		//TODO print success message with config path
+		// TODO print success message with config path
 	},
 }
 
