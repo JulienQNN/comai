@@ -16,7 +16,7 @@ var initCmd = &cobra.Command{
 
 		result, err := wizard.Start(isGlobal)
 		if err != nil {
-			log.Fatal("Error during configuration wizard", "err", err)
+			log.Fatal("during configuration wizard", "err", err)
 		}
 
 		cfg := config.Config{
@@ -28,7 +28,7 @@ var initCmd = &cobra.Command{
 		}
 
 		if err := config.SaveConfig(cfg, isGlobal); err != nil {
-			log.Fatal("Error saving configuration", "err", err)
+			log.Fatal("saving configuration", "err", err)
 		}
 
 		//TODO print success message with config path
