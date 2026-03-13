@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/spinner"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/JulienQNN/comai/internal/prompt"
 	"github.com/JulienQNN/comai/internal/provider"
+	"github.com/JulienQNN/comai/internal/theme"
 )
 
 func (m model) Init() tea.Cmd {
@@ -28,8 +28,9 @@ func (m model) callLLM() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
 			return m, tea.Quit
 		}
 	case llmResponseMsg:
@@ -45,24 +46,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m model) View() string {
+func (m model) View() tea.View {
 	if m.done {
 		if m.err != nil {
-			return ""
+			return tea.NewView("")
 		}
 		elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
-		return fmt.Sprintf("Generated in %s\n", elapsed.String())
+		return tea.NewView(fmt.Sprintf("Generated in %s\n", elapsed.String()))
 	}
 
 	elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
-	return fmt.Sprintf("%s Generating commit message... %s", m.spinner.View(), elapsed.String())
+	return tea.NewView(
+		fmt.Sprintf("%s Generating commit message... %s", m.spinner.View(), elapsed.String()),
+	)
 }
 
 // Start launches the spinner TUI and calls the LLM.
 func Start(p provider.Provider, params prompt.CompletionParams) (Result, error) {
 	s := spinner.New()
 	s.Spinner = spinner.Points
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	s.Style = theme.Default().Spinner
 
 	m := model{
 		spinner:  s,

@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/log"
+	"charm.land/huh/v2"
+	"charm.land/log/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/JulienQNN/comai/internal/git"
 	"github.com/JulienQNN/comai/internal/prompt"
 	"github.com/JulienQNN/comai/internal/provider"
+	"github.com/JulienQNN/comai/internal/theme"
 )
 
 var generateCmd = &cobra.Command{
@@ -89,36 +89,27 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
-		titleCommit := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("205")).
-			Render("Commit")
-		titleSep := lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render(
+		t := theme.Default()
+		titleCommit := t.CommitTitle.Render("Commit")
+		titleSep := t.Muted.Render(
 			" - Generated in " + result.Elapsed.Truncate(10*time.Millisecond).String(),
 		)
-		commitStyle := lipgloss.NewStyle().
-			BorderLeft(true).
-			BorderStyle(lipgloss.ThickBorder()).
-			BorderForeground(lipgloss.Color("205")).
-			PaddingLeft(1)
-		italicStyle := lipgloss.NewStyle().Italic(true).Foreground(lipgloss.Color("240"))
-
 		dateDisplay := "now"
 		if dateInteractive {
 			dateDisplay = "to be defined"
 		} else if dateFlag != "" {
-			t, err := git.ParseDate(dateFlag)
+			parsed, err := git.ParseDate(dateFlag)
 			if err != nil {
 				log.Error("parsing date", "err", err)
 				return
 			}
-			dateDisplay = t.Format("2006-01-02 15:04:05")
+			dateDisplay = parsed.Format("2006-01-02 15:04:05")
 		}
 
 		fmt.Println(titleCommit + titleSep)
-		fmt.Println(commitStyle.Render(commitMsg))
-		fmt.Println(italicStyle.Render(fmt.Sprintf(" %s <%s>", author.Name, author.Email)))
-		fmt.Println(italicStyle.Render(fmt.Sprintf(" %s", dateDisplay)))
+		fmt.Println(t.CommitBorder.Render(commitMsg))
+		fmt.Println(t.Italic.Render(fmt.Sprintf(" %s <%s>", author.Name, author.Email)))
+		fmt.Println(t.Italic.PaddingBottom(1).Render(fmt.Sprintf(" %s", dateDisplay)))
 
 		confirmed := false
 		form := huh.NewForm(

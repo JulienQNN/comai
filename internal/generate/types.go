@@ -3,7 +3,7 @@ package generate
 import (
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
+	"charm.land/bubbles/v2/spinner"
 
 	"github.com/JulienQNN/comai/internal/prompt"
 	"github.com/JulienQNN/comai/internal/provider"
