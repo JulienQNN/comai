@@ -1,6 +1,9 @@
 package wizard
 
 import (
+	"maps"
+	"slices"
+
 	"charm.land/huh/v2"
 )
 
@@ -11,7 +14,7 @@ func Start(isGlobal bool) (Result, error) {
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("Provider").
-				Options(huh.NewOptions("ollama")...).
+				Options(huh.NewOptions(slices.Sorted(maps.Keys(modelsByProvider))...)...).
 				Value(&result.ProviderName),
 
 			huh.NewSelect[string]().
@@ -48,10 +51,6 @@ func Start(isGlobal bool) (Result, error) {
 
 	if result.MaxLength == "" {
 		result.MaxLength = "50"
-	}
-
-	if result.CustomInstructions == "" {
-		result.CustomInstructions = "<type>(<optional scope>): <description>"
 	}
 
 	return result, nil
