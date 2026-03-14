@@ -19,13 +19,19 @@ type model struct {
 	spinner  spinner.Model
 	start    time.Time
 	done     bool
-	result   string
+	partial  string // accumulates streaming tokens
 	err      error
+	tokenCh  <-chan string
+	errCh    <-chan error
 	provider provider.Provider
 	params   prompt.CompletionParams
 }
 
-type llmResponseMsg struct {
-	msg string
-	err error
+type llmStreamStartMsg struct {
+	ch    <-chan string
+	errCh <-chan error
 }
+
+type llmTokenMsg string
+
+type llmDoneMsg struct{ err error }

@@ -1,5 +1,5 @@
-custom_instructions: '<type>(<optional scope>): <description>'
+custom_instructions: ""
 language: en
-max_length: "50"
-model: qwen3.5:9b
-provider: ollama
+max_length: "100"
+model: gemini-3-flash
+provider: copilot

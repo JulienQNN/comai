@@ -3,6 +3,7 @@ package generate
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"charm.land/bubbles/v2/spinner"
@@ -19,10 +20,29 @@ func (m model) Init() tea.Cmd {
 
 func (m model) callLLM() tea.Cmd {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-		defer cancel()
-		msg, err := m.provider.Complete(ctx, m.params)
-		return llmResponseMsg{msg: msg, err: err}
+		ch := make(chan string, 64)
+		errCh := make(chan error, 1)
+
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+			defer cancel()
+			defer close(ch)
+			err := m.provider.Stream(ctx, m.params, ch)
+			errCh <- err
+			close(errCh)
+		}()
+
+		return llmStreamStartMsg{ch: ch, errCh: errCh}
+	}
+}
+
+func waitForToken(ch <-chan string, errCh <-chan error) tea.Cmd {
+	return func() tea.Msg {
+		token, ok := <-ch
+		if !ok {
+			return llmDoneMsg{err: <-errCh}
+		}
+		return llmTokenMsg(token)
 	}
 }
 
@@ -33,9 +53,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		}
-	case llmResponseMsg:
+	case llmStreamStartMsg:
+		m.tokenCh = msg.ch
+		m.errCh = msg.errCh
+		return m, waitForToken(m.tokenCh, m.errCh)
+	case llmTokenMsg:
+		m.partial += string(msg)
+		return m, waitForToken(m.tokenCh, m.errCh)
+	case llmDoneMsg:
 		m.done = true
-		m.result = msg.msg
 		m.err = msg.err
 		return m, tea.Quit
 	case spinner.TickMsg:
@@ -47,21 +73,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() tea.View {
+	elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
+
 	if m.done {
-		if m.err != nil {
-			return tea.NewView("")
-		}
-		elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
 		return tea.NewView(fmt.Sprintf("Generated in %s\n", elapsed.String()))
 	}
 
-	elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
-	return tea.NewView(
-		fmt.Sprintf("%s Generating commit message... %s", m.spinner.View(), elapsed.String()),
-	)
+	status := fmt.Sprintf("%s Generating commit message... %s", m.spinner.View(), elapsed.String())
+	if m.partial != "" {
+		return tea.NewView(status + "\n" + m.partial)
+	}
+	return tea.NewView(status)
 }
 
-// Start launches the spinner TUI and calls the LLM.
+// Start launches the streaming TUI and calls the LLM provider.
 func Start(p provider.Provider, params prompt.CompletionParams) (Result, error) {
 	s := spinner.New()
 	s.Spinner = spinner.Points
@@ -89,7 +114,7 @@ func Start(p provider.Provider, params prompt.CompletionParams) (Result, error) 
 	}
 
 	return Result{
-		CommitMsg: gm.result,
+		CommitMsg: strings.TrimSpace(gm.partial),
 		Elapsed:   time.Since(m.start),
 	}, nil
 }

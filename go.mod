@@ -8,6 +8,7 @@ require (
 	charm.land/huh/v2 v2.0.3
 	charm.land/lipgloss/v2 v2.0.1
 	charm.land/log/v2 v2.0.0
+	github.com/github/copilot-sdk/go v0.1.32
 	github.com/ijt/go-anytime v1.9.2
 	github.com/ollama/ollama v0.17.7
 	github.com/spf13/cobra v1.10.2
@@ -33,6 +34,7 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-logfmt/logfmt v0.6.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
+	github.com/google/jsonschema-go v0.4.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/ijt/goparsify v0.0.0-20221203142333-3a5276334b8d // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
