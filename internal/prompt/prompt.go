@@ -13,7 +13,7 @@ func Build(diff string, cfg config.Config) CompletionParams {
 	}
 
 	system := fmt.Sprintf(
-		"Output ONLY a git commit message in lowercase, without any formatting, backticks or codeblocks. following convential commit messages <type>(<optional scope>): <description> with MaxLength: %v Language: %s.",
+		"Output ONLY a git commit message in lowercase, without any formatting, backticks or codeblocks. following conventional commit messages <type>(<optional scope>): <description> with MaxLength: %v Language: %s.",
 		cfg.MaxLength,
 		cfg.Language,
 	)

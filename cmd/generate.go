@@ -74,7 +74,12 @@ var generateCmd = &cobra.Command{
 			log.Error("creating provider", "err", err)
 			return
 		}
-		defer p.Close()
+
+		defer func() {
+			if closeErr := p.Close(); closeErr != nil && err == nil {
+				err = closeErr
+			}
+		}()
 
 		result, err := generate.Start(p, prompt.Build(diff.RawDiff, cfg))
 		if err != nil {

@@ -29,7 +29,11 @@ func New(model string) (*Client, error) {
 	return &Client{model: model, client: c}, nil
 }
 
-func (c *Client) Stream(ctx context.Context, params prompt.CompletionParams, ch chan<- string) error {
+func (c *Client) Stream(
+	ctx context.Context,
+	params prompt.CompletionParams,
+	ch chan<- string,
+) error {
 	session, err := c.client.CreateSession(ctx, &copilot.SessionConfig{
 		Model:               c.model,
 		ClientName:          "comai",
@@ -43,7 +47,13 @@ func (c *Client) Stream(ctx context.Context, params prompt.CompletionParams, ch 
 	if err != nil {
 		return fmt.Errorf("copilot create session: %w", err)
 	}
-	defer session.Disconnect()
+
+	defer func() {
+		dErr := session.Disconnect()
+		if dErr != nil && err == nil {
+			err = fmt.Errorf("copilot disconnect session: %w", dErr)
+		}
+	}()
 
 	done := make(chan error, 1)
 
