@@ -1,14 +1,40 @@
 package wizard
 
 import (
+	"context"
 	"maps"
 	"slices"
+	"time"
 
 	"charm.land/huh/v2"
+	copilotprovider "github.com/JulienQNN/comai/internal/provider/copilot"
+	"github.com/JulienQNN/comai/internal/provider/ollama"
 )
+
+func listCopilotModels() []string {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	c, err := copilotprovider.New("")
+	if err != nil {
+		return fallbackCopilotModels
+	}
+	defer c.Close()
+
+	models, err := c.ListModels(ctx)
+	if err != nil || len(models) == 0 {
+		return fallbackCopilotModels
+	}
+	return models
+}
 
 func Start(isGlobal bool) (Result, error) {
 	var result Result
+
+	modelsByProvider := map[string][]string{
+		"ollama":  ollama.RecommendedModels,
+		"copilot": listCopilotModels(),
+	}
 
 	form := huh.NewForm(
 		huh.NewGroup(
