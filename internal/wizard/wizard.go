@@ -2,8 +2,6 @@ package wizard
 
 import (
 	"context"
-	"maps"
-	"slices"
 	"time"
 
 	"charm.land/huh/v2"
@@ -31,22 +29,33 @@ func listCopilotModels() []string {
 func Start(isGlobal bool) (Result, error) {
 	var result Result
 
-	modelsByProvider := map[string][]string{
-		"ollama":  ollama.RecommendedModels,
-		"copilot": listCopilotModels(),
+	copilotModels := fallbackCopilotModels
+	copilotCh := make(chan []string, 1)
+	go func() { copilotCh <- listCopilotModels() }()
+
+	getModels := func(provider string) []string {
+		if provider == "copilot" {
+			select {
+			case models := <-copilotCh:
+				copilotModels = models
+			case <-time.After(5 * time.Second):
+			}
+			return copilotModels
+		}
+		return ollama.RecommendedModels
 	}
 
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("Provider").
-				Options(huh.NewOptions(slices.Sorted(maps.Keys(modelsByProvider))...)...).
+				Options(huh.NewOptions("ollama", "copilot")...).
 				Value(&result.ProviderName),
 
 			huh.NewSelect[string]().
 				Title("Model").
 				OptionsFunc(func() []huh.Option[string] {
-					return huh.NewOptions(modelsByProvider[result.ProviderName]...)
+					return huh.NewOptions(getModels(result.ProviderName)...)
 				}, &result.ProviderName).
 				Value(&result.ModelName),
 
