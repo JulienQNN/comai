@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"charm.land/huh/v2"
+
 	copilotprovider "github.com/JulienQNN/comai/internal/provider/copilot"
 	"github.com/JulienQNN/comai/internal/provider/ollama"
 )
@@ -17,7 +18,12 @@ func listCopilotModels() []string {
 	if err != nil {
 		return fallbackCopilotModels
 	}
-	defer c.Close()
+
+	defer func() {
+		if closeErr := c.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	models, err := c.ListModels(ctx)
 	if err != nil || len(models) == 0 {
