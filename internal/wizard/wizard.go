@@ -1,26 +1,67 @@
 package wizard
 
 import (
-	"maps"
-	"slices"
+	"context"
+	"time"
 
 	"charm.land/huh/v2"
+
+	copilotprovider "github.com/JulienQNN/comai/internal/provider/copilot"
+	"github.com/JulienQNN/comai/internal/provider/ollama"
 )
+
+func listCopilotModels() []string {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	c, err := copilotprovider.New("")
+	if err != nil {
+		return fallbackCopilotModels
+	}
+
+	defer func() {
+		if closeErr := c.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
+
+	models, err := c.ListModels(ctx)
+	if err != nil || len(models) == 0 {
+		return fallbackCopilotModels
+	}
+	return models
+}
 
 func Start(isGlobal bool) (Result, error) {
 	var result Result
+
+	copilotModels := fallbackCopilotModels
+	copilotCh := make(chan []string, 1)
+	go func() { copilotCh <- listCopilotModels() }()
+
+	getModels := func(provider string) []string {
+		if provider == "copilot" {
+			select {
+			case models := <-copilotCh:
+				copilotModels = models
+			case <-time.After(5 * time.Second):
+			}
+			return copilotModels
+		}
+		return ollama.RecommendedModels
+	}
 
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("Provider").
-				Options(huh.NewOptions(slices.Sorted(maps.Keys(modelsByProvider))...)...).
+				Options(huh.NewOptions("ollama", "copilot")...).
 				Value(&result.ProviderName),
 
 			huh.NewSelect[string]().
 				Title("Model").
 				OptionsFunc(func() []huh.Option[string] {
-					return huh.NewOptions(modelsByProvider[result.ProviderName]...)
+					return huh.NewOptions(getModels(result.ProviderName)...)
 				}, &result.ProviderName).
 				Value(&result.ModelName),
 

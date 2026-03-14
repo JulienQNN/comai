@@ -75,6 +75,18 @@ func (c *Client) Stream(
 	return <-done
 }
 
+func (c *Client) ListModels(ctx context.Context) ([]string, error) {
+	models, err := c.client.ListModels(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("copilot list models: %w", err)
+	}
+	ids := make([]string, len(models))
+	for i, m := range models {
+		ids[i] = m.ID
+	}
+	return ids, nil
+}
+
 func (c *Client) Close() error {
 	return c.client.Stop()
 }
