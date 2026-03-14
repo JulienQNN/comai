@@ -69,11 +69,12 @@ var generateCmd = &cobra.Command{
 			fmt.Printf("[%s] %s\n", f.Status, f.Path)
 		}
 
-		p, err := provider.New(cfg.ModelName)
+		p, err := provider.New(cfg.ProviderName, cfg.ModelName)
 		if err != nil {
 			log.Error("creating provider", "err", err)
 			return
 		}
+		defer p.Close()
 
 		result, err := generate.Start(p, prompt.Build(diff.RawDiff, cfg))
 		if err != nil {
@@ -92,7 +93,8 @@ var generateCmd = &cobra.Command{
 		t := theme.Default()
 		titleCommit := t.CommitTitle.Render("Commit")
 		titleSep := t.Muted.Render(
-			" - Generated in " + result.Elapsed.Truncate(10*time.Millisecond).String(),
+			" - Generated in " + result.Elapsed.Truncate(10*time.Millisecond).String() +
+				" · " + cfg.ProviderName + "/" + cfg.ModelName,
 		)
 		dateDisplay := "now"
 		if dateInteractive {
