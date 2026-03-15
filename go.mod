@@ -10,7 +10,7 @@ require (
 	charm.land/log/v2 v2.0.0
 	github.com/github/copilot-sdk/go v0.1.32
 	github.com/ijt/go-anytime v1.9.2
-	github.com/ollama/ollama v0.17.7
+	github.com/ollama/ollama v0.18.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 )
