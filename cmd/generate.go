@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
 	"charm.land/log/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -63,8 +64,6 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println(diff.Stats)
-
 		for _, f := range diff.Files {
 			fmt.Printf("[%s] %s\n", f.Status, f.Path)
 		}
@@ -96,7 +95,7 @@ var generateCmd = &cobra.Command{
 		}
 
 		t := theme.Default()
-		titleCommit := t.CommitTitle.Render("Commit")
+		titleCommit := t.Title.Render("Commit")
 		titleSep := t.Muted.Render(
 			" - Generated in " + result.Elapsed.Truncate(10*time.Millisecond).String() +
 				" · " + cfg.ProviderName + "/" + cfg.ModelName,
@@ -113,16 +112,26 @@ var generateCmd = &cobra.Command{
 			dateDisplay = parsed.Format("2006-01-02 15:04:05")
 		}
 
-		fmt.Println(titleCommit + titleSep)
-		fmt.Println(t.CommitBorder.Render(commitMsg))
-		fmt.Println(t.Italic.Render(fmt.Sprintf(" %s <%s>", author.Name, author.Email)))
-		fmt.Println(t.Italic.PaddingBottom(1).Render(fmt.Sprintf(" %s", dateDisplay)))
+		header := lipgloss.JoinHorizontal(
+			lipgloss.Center,
+			titleCommit,
+			titleSep,
+		)
+
+		finalOutput := lipgloss.JoinVertical(
+			lipgloss.Left,
+			diff.Stats,
+			header,
+			t.CommitBorder.Render(commitMsg),
+			t.Italic.Render(fmt.Sprintf(" %s <%s>", author.Name, author.Email)),
+			t.Italic.PaddingBottom(1).Render(fmt.Sprintf(" %s", dateDisplay)),
+		)
+		fmt.Println(finalOutput)
 
 		confirmed := false
 		form := huh.NewForm(
 			huh.NewGroup(
 				huh.NewConfirm().
-					Title("Commit with this message ?").
 					Affirmative("Commit").
 					Negative("Cancel").
 					Value(&confirmed),

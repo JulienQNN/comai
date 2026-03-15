@@ -12,12 +12,12 @@ var (
 )
 
 type Theme struct {
-	CommitTitle  lipgloss.Style
+	Title        lipgloss.Style
 	CommitBorder lipgloss.Style
 	Italic       lipgloss.Style
 	Muted        lipgloss.Style
+	MutedItalic  lipgloss.Style
 
-	ConfigTitle  lipgloss.Style
 	ConfigBorder lipgloss.Style
 	ConfigKey    lipgloss.Style
 	ConfigValue  lipgloss.Style
@@ -26,24 +26,25 @@ type Theme struct {
 }
 
 func Default() Theme {
+	baseLeftBlock := lipgloss.NewStyle().
+		BorderLeft(true).
+		BorderStyle(lipgloss.ThickBorder()).
+		PaddingLeft(1)
+
+	baseText := lipgloss.NewStyle().Foreground(Muted)
+
 	return Theme{
-		CommitTitle: lipgloss.NewStyle().Bold(true).Foreground(Primary),
-		CommitBorder: lipgloss.NewStyle().
-			BorderLeft(true).
-			BorderStyle(lipgloss.ThickBorder()).
-			BorderForeground(Primary).
-			PaddingLeft(1),
-		Italic: lipgloss.NewStyle().Italic(true).Foreground(Muted),
-		Muted:  lipgloss.NewStyle().Foreground(Muted),
-
-		ConfigTitle: lipgloss.NewStyle().Bold(true).Foreground(Primary).MarginTop(1),
-		ConfigBorder: lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(Secondary).
-			Padding(0, 1),
-		ConfigKey:   lipgloss.NewStyle().Foreground(Muted),
-		ConfigValue: lipgloss.NewStyle().Foreground(White),
-
-		Spinner: lipgloss.NewStyle().Foreground(Primary),
+		// commits
+		CommitBorder: baseLeftBlock.Copy().BorderForeground(Primary),
+		// config
+		ConfigBorder: baseLeftBlock.Copy().BorderForeground(Secondary),
+		ConfigKey:    baseText.Copy(),
+		ConfigValue:  lipgloss.NewStyle().Foreground(White),
+		// shared styles
+		Title:       lipgloss.NewStyle().Bold(true).Foreground(Primary).MarginTop(1),
+		Italic:      baseText.Copy().Italic(true),
+		Muted:       baseText.Copy(),
+		MutedItalic: baseText.Copy().Italic(true),
+		Spinner:     lipgloss.NewStyle().Foreground(Primary),
 	}
 }

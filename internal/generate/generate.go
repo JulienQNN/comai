@@ -75,14 +75,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() tea.View {
 	elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
 
-	// if m.done {
-	// 	return tea.NewView(fmt.Sprintf("Generated in %s\n", elapsed.String()))
-	// }
+	if m.done {
+		return tea.NewView("")
+	}
 
 	status := fmt.Sprintf("%s Generating commit message... %s", m.spinner.View(), elapsed.String())
 	if m.partial != "" {
 		return tea.NewView(status + "\n" + m.partial)
 	}
+
 	return tea.NewView(status)
 }
 
@@ -91,7 +92,6 @@ func Start(p provider.Provider, params prompt.CompletionParams) (Result, error) 
 	s := spinner.New()
 	s.Spinner = spinner.Points
 	s.Style = theme.Default().Spinner
-
 	m := model{
 		spinner:  s,
 		start:    time.Now(),
