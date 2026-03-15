@@ -72,7 +72,12 @@ func (c *Client) Stream(
 		return fmt.Errorf("copilot send message: %w", err)
 	}
 
-	return <-done
+	select {
+	case err := <-done:
+		return err
+	case <-ctx.Done():
+		return fmt.Errorf("copilot stream cancelled: %w", ctx.Err())
+	}
 }
 
 func (c *Client) ListModels(ctx context.Context) ([]string, error) {

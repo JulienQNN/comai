@@ -75,9 +75,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() tea.View {
 	elapsed := time.Since(m.start).Truncate(100 * time.Millisecond)
 
-	if m.done {
-		return tea.NewView(fmt.Sprintf("Generated in %s\n", elapsed.String()))
-	}
+	// if m.done {
+	// 	return tea.NewView(fmt.Sprintf("Generated in %s\n", elapsed.String()))
+	// }
 
 	status := fmt.Sprintf("%s Generating commit message... %s", m.spinner.View(), elapsed.String())
 	if m.partial != "" {

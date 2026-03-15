@@ -35,9 +35,17 @@ func listCopilotModels() []string {
 func Start(isGlobal bool) (Result, error) {
 	var result Result
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	copilotModels := fallbackCopilotModels
 	copilotCh := make(chan []string, 1)
-	go func() { copilotCh <- listCopilotModels() }()
+	go func() {
+		select {
+		case copilotCh <- listCopilotModels():
+		case <-ctx.Done():
+		}
+	}()
 
 	getModels := func(provider string) []string {
 		if provider == "copilot" {
