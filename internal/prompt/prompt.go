@@ -101,6 +101,7 @@ func filterDiff(raw string) string {
 func Build(diff string, cfg config.Config) CompletionParams {
 	system := fmt.Sprintf(
 		"Output ONLY a git commit message in lowercase MaxLength: %v Language: %s without ANY formatting backticks or codeblocks following conventional commit messages <type>(<optional scope>): <description>",
+		cfg.MaxLength,
 		cfg.Language,
 	)
 
