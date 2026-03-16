@@ -23,7 +23,6 @@ func PrintConfig(cfg Config, verbose bool) {
 	}
 	addLine("Provider:", cfg.ProviderName)
 	addLine("Model:", cfg.ModelName)
-	addLine("Commit Max Length:", cfg.CommitMaxLength)
 	addLine("Language:", cfg.Language)
 
 	if cfg.CustomInstructions != "" {
