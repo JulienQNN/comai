@@ -81,7 +81,7 @@ func Start(isGlobal bool) (Result, error) {
 			huh.NewInput().
 				Title("Commit Max Length").
 				Placeholder("50 (optional)").
-				Value(&result.MaxLength),
+				Value(&result.CommitMaxLength),
 
 			huh.NewInput().
 				Title("Custom instructions").
@@ -98,8 +98,8 @@ func Start(isGlobal bool) (Result, error) {
 		result.Language = "en"
 	}
 
-	if result.MaxLength == "" {
-		result.MaxLength = "50"
+	if result.CommitMaxLength == "" {
+		result.CommitMaxLength = "50"
 	}
 
 	return result, nil
