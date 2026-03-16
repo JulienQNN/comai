@@ -23,7 +23,6 @@ var initCmd = &cobra.Command{
 			ProviderName:       result.ProviderName,
 			ModelName:          result.ModelName,
 			Language:           result.Language,
-			MaxLength:          result.MaxLength,
 			CustomInstructions: result.CustomInstructions,
 		}
 

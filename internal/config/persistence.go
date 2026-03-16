@@ -24,7 +24,6 @@ func SaveConfig(cfg Config, isGlobal bool) error {
 	v.Set("provider", cfg.ProviderName)
 	v.Set("model", cfg.ModelName)
 	v.Set("language", cfg.Language)
-	v.Set("max_length", cfg.MaxLength)
 	v.Set("custom_instructions", cfg.CustomInstructions)
 
 	if err := v.WriteConfigAs(configPath); err != nil {

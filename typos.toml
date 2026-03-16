@@ -4,7 +4,8 @@ extend-exclude = [
     "*.sum",
     "*.mod",
     "*.csv",
-    "result.json"
+    "result.json",
+    "internal/theme/render.go"
 ]
 
 [default.extend-words]

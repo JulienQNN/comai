@@ -12,38 +12,54 @@ var (
 )
 
 type Theme struct {
-	CommitTitle  lipgloss.Style
+	Title        lipgloss.Style
 	CommitBorder lipgloss.Style
 	Italic       lipgloss.Style
 	Muted        lipgloss.Style
+	MutedItalic  lipgloss.Style
 
-	ConfigTitle  lipgloss.Style
 	ConfigBorder lipgloss.Style
 	ConfigKey    lipgloss.Style
 	ConfigValue  lipgloss.Style
+
+	BadgeMod lipgloss.Style
+	BadgeAdd lipgloss.Style
+	BadgeDel lipgloss.Style
+	BadgeUnk lipgloss.Style
+
+	FileDir  lipgloss.Style
+	FileName lipgloss.Style
 
 	Spinner lipgloss.Style
 }
 
 func Default() Theme {
+	baseText := lipgloss.NewStyle().Foreground(Muted)
+	baseLeftBlock := lipgloss.NewStyle().
+		BorderLeft(true).
+		BorderStyle(lipgloss.ThickBorder()).
+		PaddingLeft(1)
+
 	return Theme{
-		CommitTitle: lipgloss.NewStyle().Bold(true).Foreground(Primary),
-		CommitBorder: lipgloss.NewStyle().
-			BorderLeft(true).
-			BorderStyle(lipgloss.ThickBorder()).
-			BorderForeground(Primary).
-			PaddingLeft(1),
-		Italic: lipgloss.NewStyle().Italic(true).Foreground(Muted),
-		Muted:  lipgloss.NewStyle().Foreground(Muted),
+		// commits
+		CommitBorder: baseLeftBlock.BorderForeground(Primary),
+		// config
+		ConfigBorder: baseLeftBlock.BorderForeground(Secondary),
+		ConfigKey:    baseText,
+		ConfigValue:  lipgloss.NewStyle().Foreground(White),
+		// diff
+		BadgeMod: lipgloss.NewStyle().Foreground(lipgloss.Color("#F5A623")),
+		BadgeAdd: lipgloss.NewStyle().Foreground(lipgloss.Color("#10B981")),
+		BadgeDel: lipgloss.NewStyle().Foreground(lipgloss.Color("#EF4444")),
+		BadgeUnk: lipgloss.NewStyle().Foreground(lipgloss.Color("#6B7280")),
 
-		ConfigTitle: lipgloss.NewStyle().Bold(true).Foreground(Primary).MarginTop(1),
-		ConfigBorder: lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(Secondary).
-			Padding(0, 1),
-		ConfigKey:   lipgloss.NewStyle().Foreground(Muted),
-		ConfigValue: lipgloss.NewStyle().Foreground(White),
-
-		Spinner: lipgloss.NewStyle().Foreground(Primary),
+		FileDir:  baseText,
+		FileName: lipgloss.NewStyle().Foreground(White),
+		// shared styles
+		Title:       lipgloss.NewStyle().Bold(true).Foreground(Primary).MarginTop(1),
+		Italic:      baseText.Italic(true),
+		Muted:       baseText,
+		MutedItalic: baseText.Italic(true),
+		Spinner:     lipgloss.NewStyle().Foreground(Primary),
 	}
 }
