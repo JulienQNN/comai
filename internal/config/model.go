@@ -12,8 +12,8 @@ import (
 
 func PrintConfig(cfg Config, verbose bool) {
 	t := theme.Default()
-	alignedKey := t.ConfigKey.Copy().Align(lipgloss.Right)
-	valStyle := t.ConfigValue.Copy().MarginLeft(1).Width(55)
+	alignedKey := t.ConfigKey.Align(lipgloss.Right)
+	valStyle := t.ConfigValue.MarginLeft(1).Width(55)
 	var lines []string
 	addLine := func(label, value string) {
 		line := lipgloss.JoinHorizontal(lipgloss.Top, alignedKey.Render(label),

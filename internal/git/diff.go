@@ -19,14 +19,6 @@ func getFilesWithStatus() ([]FileDiff, error) {
 		return nil, err
 	}
 
-	statusMap := map[string]string{
-		"A": "NEW",
-		"M": "MODIFY",
-		"D": "DELETE",
-		"R": "RENAME",
-		"C": "COPY",
-	}
-
 	var files []FileDiff
 	for line := range strings.SplitSeq(strings.TrimSpace(output), "\n") {
 		if line == "" {
@@ -36,11 +28,9 @@ func getFilesWithStatus() ([]FileDiff, error) {
 		if len(fields) < 2 {
 			continue
 		}
-		label, ok := statusMap[string(fields[0][0])]
-		if !ok {
-			label = "MODIFY"
-		}
-		files = append(files, FileDiff{Status: label, Path: fields[len(fields)-1]})
+		statusChar := string(fields[0][0])
+
+		files = append(files, FileDiff{Status: statusChar, Path: fields[len(fields)-1]})
 	}
 	return files, nil
 }
