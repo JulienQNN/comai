@@ -30,6 +30,7 @@ var generateCmd = &cobra.Command{
 		isGlobal, _ := cmd.Flags().GetBool("global")
 		dateFlag, _ := cmd.Flags().GetString("date")
 		dateInteractive, _ := cmd.Flags().GetBool("date-interactive")
+		t := theme.Default()
 
 		if dateFlag != "" {
 			if _, err := git.ParseDate(dateFlag); err != nil {
@@ -65,7 +66,7 @@ var generateCmd = &cobra.Command{
 		}
 
 		for _, f := range diff.Files {
-			fmt.Printf("[%s] %s\n", f.Status, f.Path)
+			fmt.Println(t.RenderFileChange(f.Status, f.Path))
 		}
 
 		p, err := provider.New(cfg.ProviderName, cfg.ModelName)
@@ -94,7 +95,6 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
-		t := theme.Default()
 		titleCommit := t.Title.Render("Commit")
 		titleSep := t.Muted.Render(
 			" - Generated in " + result.Elapsed.Truncate(10*time.Millisecond).String() +
