@@ -109,7 +109,7 @@ func Build(diff string, cfg config.Config) CompletionParams {
 		system = cfg.CustomInstructions
 	}
 
-	maxTokens := 200 + (cfg.CommitMaxLength / 4)
+	maxTokens := 20 + (cfg.CommitMaxLength / 4)
 
 	return CompletionParams{
 		SystemPrompt: system,
