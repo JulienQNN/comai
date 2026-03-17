@@ -27,19 +27,20 @@ func ParseDate(s string) (time.Time, error) {
 	return t, nil
 }
 
+func FormatDate(date string) (string, error) {
+	t, err := ParseDate(date)
+	if err != nil {
+		return "", err
+	}
+	return t.Format(time.RFC3339), nil
+}
+
 func Commit(message string, opts CommitOptions) error {
 	args := []string{"commit", "-m", message}
 	var committerDateEnv []string
 
-	if opts.Date != "" {
-		t, err := ParseDate(opts.Date)
-		if err != nil {
-			return err
-		}
-		formattedDate := t.Format(time.RFC3339)
-		args = append(args, "--date", formattedDate)
-		committerDateEnv = append(os.Environ(), "GIT_COMMITTER_DATE="+formattedDate)
-	}
+	args = append(args, "--date", opts.Date)
+	committerDateEnv = append(os.Environ(), "GIT_COMMITTER_DATE="+opts.Date)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
