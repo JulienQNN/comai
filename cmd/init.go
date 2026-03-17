@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strconv"
+
 	"charm.land/log/v2"
 	"github.com/spf13/cobra"
 
@@ -18,12 +20,15 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal("during configuration wizard", "err", err)
 		}
-
+		limit, err := strconv.Atoi(result.CommitMaxLength)
+		if err != nil {
+			log.Fatal("parsing commit max length", "err", err)
+		}
 		cfg := config.Config{
 			ProviderName:       result.ProviderName,
 			ModelName:          result.ModelName,
 			Language:           result.Language,
-			CommitMaxLength:    result.CommitMaxLength,
+			CommitMaxLength:    limit,
 			CustomInstructions: result.CustomInstructions,
 		}
 

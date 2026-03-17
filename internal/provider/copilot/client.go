@@ -68,7 +68,11 @@ func (c *Client) Stream(
 		}
 	})
 
-	if _, err := session.Send(ctx, copilot.MessageOptions{Prompt: params.UserPrompt}); err != nil {
+
+
+	if _, err := session.Send(ctx, copilot.MessageOptions{
+		Prompt: params.UserPrompt,
+	}); err != nil {
 		return fmt.Errorf("copilot send message: %w", err)
 	}
 

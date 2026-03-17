@@ -109,9 +109,11 @@ func Build(diff string, cfg config.Config) CompletionParams {
 		system = cfg.CustomInstructions
 	}
 
+	maxTokens := 200 + (cfg.CommitMaxLength / 4)
+
 	return CompletionParams{
 		SystemPrompt: system,
 		UserPrompt:   "Diff:\n" + filterDiff(diff),
-		MaxTokens:    128,
+		MaxTokens:    maxTokens,
 	}
 }
