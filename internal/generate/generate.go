@@ -143,8 +143,8 @@ func Start(t theme.Theme, cfg config.Config, date string, dateInteractive bool) 
 
 	partial := strings.TrimSpace(gm.partial)
 	commitMsg := strings.ToLower(partial)
-
 	author, err := git.GetAuthorInfo()
+
 	if err != nil {
 		return fmt.Errorf("getting author info: %w", err)
 	}

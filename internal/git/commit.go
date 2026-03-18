@@ -38,7 +38,7 @@ func FormatDate(date string) (string, error) {
 func Commit(message string, opts CommitOptions) error {
 	args := []string{"commit", "-m", message}
 	var committerDateEnv []string
-	
+
 	if opts.Date != "" {
 		args = append(args, "--date", opts.Date)
 	}
