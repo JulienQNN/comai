@@ -144,19 +144,18 @@ func Start(t theme.Theme, cfg config.Config, date string, dateInteractive bool) 
 	partial := strings.TrimSpace(gm.partial)
 	commitMsg := strings.ToLower(partial)
 	author, err := git.GetAuthorInfo()
-
 	if err != nil {
 		return fmt.Errorf("getting author info: %w", err)
 	}
 
 	confirmed := true
-	elasped := time.Since(m.start)
+	elapsed := time.Since(m.start)
 	formattedDate, _ := git.FormatDate(date)
 	theme := theme.FormhuhTheme()
 
 	form := huh.NewForm(
 		huh.NewGroup(
-			huh.NewText().Title(renderPreview(t, cfg, elasped)).
+			huh.NewText().Title(renderPreview(t, cfg, elapsed)).
 				Value(&commitMsg).
 				Validate(func(s string) error {
 					lines := strings.Split(s, "\n")
