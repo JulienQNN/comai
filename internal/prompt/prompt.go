@@ -100,8 +100,8 @@ func filterDiff(raw string) string {
 
 func Build(diff string, cfg config.Config) CompletionParams {
 	system := fmt.Sprintf(
-		"Output ONLY a git commit message in lowercase MaxLength: %v Language: %s without ANY formatting backticks or codeblocks following conventional commit messages <type>(<optional scope>): <description>",
-		cfg.MaxLength,
+		"Output ONLY a single-line git commit message in lowercase.Max length: %v characters.Language: %sNo backticks, no formatting, no explanation. Follow the conventional commit format: <type>(<optional scope>): <description>Valid types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert Omit the scope if not relevant.",
+		cfg.CommitMaxLength,
 		cfg.Language,
 	)
 
@@ -109,9 +109,11 @@ func Build(diff string, cfg config.Config) CompletionParams {
 		system = cfg.CustomInstructions
 	}
 
+	maxTokens := 20 + (cfg.CommitMaxLength / 4)
+
 	return CompletionParams{
 		SystemPrompt: system,
 		UserPrompt:   "Diff:\n" + filterDiff(diff),
-		MaxTokens:    128,
+		MaxTokens:    maxTokens,
 	}
 }

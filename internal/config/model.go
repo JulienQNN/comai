@@ -15,15 +15,17 @@ func PrintConfig(cfg Config, verbose bool) {
 	alignedKey := t.ConfigKey.Align(lipgloss.Right)
 	valStyle := t.ConfigValue.MarginLeft(1).Width(55)
 	var lines []string
-	addLine := func(label, value string) {
+	addLine := func(label string, value any) {
+		strValue := fmt.Sprint(value)
 		line := lipgloss.JoinHorizontal(lipgloss.Top, alignedKey.Render(label),
-			valStyle.Render(value),
+			valStyle.Render(strValue),
 		)
 		lines = append(lines, line)
 	}
 	addLine("Provider:", cfg.ProviderName)
 	addLine("Model:", cfg.ModelName)
 	addLine("Language:", cfg.Language)
+	addLine("Max Commit Length:", cfg.CommitMaxLength)
 
 	if cfg.CustomInstructions != "" {
 		addLine("Custom Instructions:", cfg.CustomInstructions)

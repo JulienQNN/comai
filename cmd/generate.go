@@ -1,23 +1,15 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
-	"time"
 
-	"charm.land/huh/v2"
-	"charm.land/lipgloss/v2"
 	"charm.land/log/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/JulienQNN/comai/internal/config"
 	"github.com/JulienQNN/comai/internal/generate"
-	"github.com/JulienQNN/comai/internal/git"
-	"github.com/JulienQNN/comai/internal/prompt"
-	"github.com/JulienQNN/comai/internal/provider"
 	"github.com/JulienQNN/comai/internal/theme"
 )
 
@@ -31,13 +23,7 @@ var generateCmd = &cobra.Command{
 		dateFlag, _ := cmd.Flags().GetString("date")
 		dateInteractive, _ := cmd.Flags().GetBool("date-interactive")
 		t := theme.Default()
-
-		if dateFlag != "" {
-			if _, err := git.ParseDate(dateFlag); err != nil {
-				log.Error("parsing date", "err", err)
-				return
-			}
-		}
+		var cfg config.Config
 
 		if isGlobal {
 			home, err := os.UserHomeDir()
@@ -52,119 +38,18 @@ var generateCmd = &cobra.Command{
 			}
 		}
 
-		var cfg config.Config
 		if err := viper.Unmarshal(&cfg); err != nil {
 			log.Error("loading config", "err", err)
 			return
 		}
 
 		config.PrintConfig(cfg, verbose)
-		diff, err := git.GetStagedDiff()
-		if err != nil {
-			log.Error("getting git diff", "err", err)
-			return
-		}
-
-		for _, f := range diff.Files {
-			fmt.Println(t.RenderFileChange(f.Status, f.Path))
-		}
-
-		p, err := provider.New(cfg.ProviderName, cfg.ModelName)
-		if err != nil {
-			log.Error("creating provider", "err", err)
-			return
-		}
-
-		defer func() {
-			if closeErr := p.Close(); closeErr != nil && err == nil {
-				err = closeErr
-			}
-		}()
-
-		result, err := generate.Start(p, prompt.Build(diff.RawDiff, cfg))
+		err := generate.Start(t, cfg, dateFlag, dateInteractive)
 		if err != nil {
 			log.Error("generating commit message", "err", err)
+			os.Exit(1)
 			return
 		}
-
-		commitMsg := strings.ToLower(result.CommitMsg)
-
-		author, err := git.GetAuthorInfo()
-		if err != nil {
-			log.Error("getting author info", "err", err)
-			return
-		}
-
-		titleCommit := t.Title.Render("Commit")
-		titleSep := t.Muted.Render(
-			" - Generated in " + result.Elapsed.Truncate(10*time.Millisecond).String() +
-				" · " + cfg.ProviderName + "/" + cfg.ModelName,
-		)
-		dateDisplay := "now"
-		if dateInteractive {
-			dateDisplay = "to be defined"
-		} else if dateFlag != "" {
-			parsed, err := git.ParseDate(dateFlag)
-			if err != nil {
-				log.Error("parsing date", "err", err)
-				return
-			}
-			dateDisplay = parsed.Format("2006-01-02 15:04:05")
-		}
-
-		header := lipgloss.JoinHorizontal(
-			lipgloss.Center,
-			titleCommit,
-			titleSep,
-		)
-
-		finalOutput := lipgloss.JoinVertical(
-			lipgloss.Left,
-			diff.Stats,
-			header,
-			t.CommitBorder.Render(commitMsg),
-			t.Italic.Render(fmt.Sprintf(" %s <%s>", author.Name, author.Email)),
-			t.Italic.PaddingBottom(1).Render(fmt.Sprintf(" %s", dateDisplay)),
-		)
-		fmt.Println(finalOutput)
-
-		confirmed := false
-		form := huh.NewForm(
-			huh.NewGroup(
-				huh.NewConfirm().
-					Affirmative("Commit").
-					Negative("Cancel").
-					Value(&confirmed),
-			),
-		)
-		if err := form.Run(); err != nil {
-			log.Error("running confirmation form", "err", err)
-			return
-		}
-		if !confirmed {
-			log.Info("Commit cancelled by user")
-			return
-		}
-
-		if dateInteractive {
-			if err := huh.NewForm(
-				huh.NewGroup(
-					huh.NewInput().
-						Title("Commit date").
-						Placeholder("e.g. yesterday, 2024-01-01, last friday").
-						Value(&dateFlag),
-				),
-			).Run(); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				return
-			}
-		}
-
-		if err := git.Commit(commitMsg, git.CommitOptions{Date: dateFlag}); err != nil {
-			log.Error("committing changes", "err", err)
-			return
-		}
-		log.Info("Changes committed successfully")
 	},
 }
 

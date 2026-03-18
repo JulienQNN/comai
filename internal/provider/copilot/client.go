@@ -14,16 +14,9 @@ func New(model string) (*Client, error) {
 		model = defaultModel
 	}
 
-	c := copilot.NewClient(&copilot.ClientOptions{
-		CLIPath:         "gh",
-		CLIArgs:         []string{"copilot"},
-		UseLoggedInUser: new(true),
-	})
+	c := copilot.NewClient(nil)
 	if err := c.Start(context.Background()); err != nil {
-		return nil, fmt.Errorf(
-			"copilot client start (is 'gh' installed and authenticated?): %w",
-			err,
-		)
+		return nil, fmt.Errorf("copilot start client: %w", err)
 	}
 
 	return &Client{model: model, client: c}, nil
@@ -68,7 +61,9 @@ func (c *Client) Stream(
 		}
 	})
 
-	if _, err := session.Send(ctx, copilot.MessageOptions{Prompt: params.UserPrompt}); err != nil {
+	if _, err := session.Send(ctx, copilot.MessageOptions{
+		Prompt: params.UserPrompt,
+	}); err != nil {
 		return fmt.Errorf("copilot send message: %w", err)
 	}
 

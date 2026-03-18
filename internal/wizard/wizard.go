@@ -2,12 +2,14 @@ package wizard
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"charm.land/huh/v2"
 
 	copilotprovider "github.com/JulienQNN/comai/internal/provider/copilot"
 	"github.com/JulienQNN/comai/internal/provider/ollama"
+	"github.com/JulienQNN/comai/internal/theme"
 )
 
 func listCopilotModels() []string {
@@ -32,7 +34,7 @@ func listCopilotModels() []string {
 	return models
 }
 
-func Start(isGlobal bool) (Result, error) {
+func Start(t theme.Theme, isGlobal bool) (Result, error) {
 	var result Result
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -59,6 +61,7 @@ func Start(isGlobal bool) (Result, error) {
 		return ollama.RecommendedModels
 	}
 
+	fmt.Println(t.Title.Render("ComAI Init"))
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
@@ -81,7 +84,7 @@ func Start(isGlobal bool) (Result, error) {
 			huh.NewInput().
 				Title("Commit Max Length").
 				Placeholder("50 (optional)").
-				Value(&result.MaxLength),
+				Value(&result.CommitMaxLength),
 
 			huh.NewInput().
 				Title("Custom instructions").
@@ -98,8 +101,8 @@ func Start(isGlobal bool) (Result, error) {
 		result.Language = "en"
 	}
 
-	if result.MaxLength == "" {
-		result.MaxLength = "50"
+	if result.CommitMaxLength == "" {
+		result.CommitMaxLength = "50"
 	}
 
 	return result, nil

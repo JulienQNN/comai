@@ -4,7 +4,7 @@ type Result struct {
 	ProviderName       string
 	ModelName          string
 	Language           string
-	MaxLength          string
+	CommitMaxLength    string
 	CustomInstructions string
 }
 
