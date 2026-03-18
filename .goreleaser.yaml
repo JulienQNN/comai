@@ -92,19 +92,6 @@ homebrew_casks:
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/comai"]
           end
 
-winget:
-  - name: comai
-    repository:
-      owner: JulienQNN
-      name: winget-pkgs
-      branch: main
-      token: "{{ .Env.WINGET_GITHUB_TOKEN }}"
-    publisher: JulienQNN
-    package_identifier: "JulienQNN.comai"
-    license: "MIT"
-    publisher_url: "https://github.com/JulienQNN/comai"
-    short_description: "Use AI to write your git commit messages and more"
-
 nfpms:
   - id: packages
     package_name: comai
