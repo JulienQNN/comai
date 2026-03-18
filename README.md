@@ -1,5 +1,6 @@
 # comai
-![](https://github.com/JulienQNN/comai/demo.gif)
+
+![](https://github.com/JulienQNN/comai/blob/main/demo.gif)
 
 Generate AI-powered git commit messages automatically from staged changes. Supports **Ollama** (local) and **GitHub Copilot**.
 
