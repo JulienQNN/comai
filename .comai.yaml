@@ -1,5 +1,5 @@
+commit_max_length: 50
 custom_instructions: ""
 language: en
-max_length: "50"
 model: qwen3.5:9b
 provider: ollama
