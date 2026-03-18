@@ -47,7 +47,12 @@ var generateCmd = &cobra.Command{
 		err := generate.Start(t, cfg, dateFlag, dateInteractive)
 		if err != nil {
 			log.Error("generating commit message", "err", err)
+			os.Exit(1)
 			return
+		}
+
+		if verbose {
+			log.Info("commit message generated successfully")
 		}
 	},
 }

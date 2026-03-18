@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2"
 	"charm.land/lipgloss/v2"
@@ -19,7 +20,7 @@ import (
 )
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(m.spinner.Tick, m.callLLM())
+	return tea.Batch(m.spinner.Tick, textinput.Blink, m.callLLM())
 }
 
 func (m model) callLLM() tea.Cmd {
@@ -104,11 +105,14 @@ func Start(t theme.Theme, cfg config.Config, date string, dateInteractive bool) 
 		}
 	}()
 
-	diff, err := git.GetStagedDiff()
 	if err != nil {
 		return fmt.Errorf("initializing provider: %w", err)
 	}
 
+	diff, err := git.GetStagedDiff()
+	if err != nil {
+		return fmt.Errorf("getting staged diff: %w", err)
+	}
 	params := prompt.Build(diff.RawDiff, cfg)
 	m := model{
 		spinner:  s,
@@ -137,47 +141,62 @@ func Start(t theme.Theme, cfg config.Config, date string, dateInteractive bool) 
 		return gm.err
 	}
 
+	partial := strings.TrimSpace(gm.partial)
+	commitMsg := strings.ToLower(partial)
+
 	author, err := git.GetAuthorInfo()
 	if err != nil {
 		return fmt.Errorf("getting author info: %w", err)
 	}
 
-	partial := strings.TrimSpace(gm.partial)
-	commitMsg := strings.ToLower(partial)
-
-	elasped := time.Since(m.start)
-
-	formattedDate, _ := git.FormatDate(date)
-	renderPreview(t, cfg, commitMsg, author, formattedDate, elasped)
-
 	confirmed := true
+	elasped := time.Since(m.start)
+	formattedDate, _ := git.FormatDate(date)
+	theme := theme.FormhuhTheme()
+
 	form := huh.NewForm(
-		huh.NewGroup(huh.NewConfirm().
-			Affirmative("Commit").
-			Negative("Cancel").
-			Value(&confirmed),
-		),
-	)
-	if err := form.Run(); err != nil {
-		return fmt.Errorf("getting confirmation: %w", err)
+		huh.NewGroup(
+			huh.NewText().Title(renderPreview(t, cfg, elasped)).
+				Value(&commitMsg).
+				Validate(func(s string) error {
+					lines := strings.Split(s, "\n")
+					if len(lines) == 0 {
+						return fmt.Errorf("commit message cannot be empty")
+					}
+					return nil
+				}).Lines(0),
+			huh.NewNote().
+				Height(1).
+				Description(renderFooter(t, formattedDate, author.Name, author.Email)),
+			huh.NewConfirm().
+				Affirmative("Commit").
+				Negative("Cancel").
+				Value(&confirmed),
+		)).WithTheme(theme).Run()
+
+	if form != nil {
+		return fmt.Errorf("running confirmation form: %w", form)
 	}
 
 	if !confirmed {
-		fmt.Println(t.Muted.Render("Commit cancelled."))
 		return nil
 	}
 
 	if dateInteractive && date == "" {
-		if err := huh.NewForm(huh.NewGroup(huh.NewInput().Title("Commit date").
-			Placeholder("e.g. yesterday, 2024-01-01, last friday").
-			Value(&date),
-		),
+		if err := huh.NewForm(
+			huh.NewGroup(
+				huh.NewInput().Title("Commit date").
+					Placeholder("e.g. yesterday, 2024-01-01, last friday").
+					Value(&date),
+			),
 		).Run(); err != nil {
 			return fmt.Errorf("getting commit date: %w", err)
 		}
-		if err != nil {
-			return err
-		}
+	}
+
+	if confirmed {
+		formattedDate, err = git.FormatDate(date)
+		renderFinal(t, commitMsg, author.Name, author.Email, formattedDate)
 	}
 
 	if err := git.Commit(commitMsg, git.CommitOptions{Date: formattedDate}); err != nil {

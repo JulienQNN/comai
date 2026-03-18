@@ -38,8 +38,10 @@ func FormatDate(date string) (string, error) {
 func Commit(message string, opts CommitOptions) error {
 	args := []string{"commit", "-m", message}
 	var committerDateEnv []string
-
-	args = append(args, "--date", opts.Date)
+	
+	if opts.Date != "" {
+		args = append(args, "--date", opts.Date)
+	}
 	committerDateEnv = append(os.Environ(), "GIT_COMMITTER_DATE="+opts.Date)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
