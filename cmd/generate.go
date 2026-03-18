@@ -50,10 +50,6 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 			return
 		}
-
-		if verbose {
-			log.Info("commit message generated successfully")
-		}
 	},
 }
 
