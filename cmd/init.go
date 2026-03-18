@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/JulienQNN/comai/internal/config"
+	"github.com/JulienQNN/comai/internal/theme"
 	"github.com/JulienQNN/comai/internal/wizard"
 )
 
@@ -15,8 +16,8 @@ var initCmd = &cobra.Command{
 	Short: "Initialize comai configuration interactively",
 	Run: func(cmd *cobra.Command, args []string) {
 		isGlobal, _ := cmd.Flags().GetBool("global")
-
-		result, err := wizard.Start(isGlobal)
+		t := theme.Default()
+		result, err := wizard.Start(t, isGlobal)
 		if err != nil {
 			log.Fatal("during configuration wizard", "err", err)
 		}

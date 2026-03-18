@@ -2,12 +2,14 @@ package wizard
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"charm.land/huh/v2"
 
 	copilotprovider "github.com/JulienQNN/comai/internal/provider/copilot"
 	"github.com/JulienQNN/comai/internal/provider/ollama"
+	"github.com/JulienQNN/comai/internal/theme"
 )
 
 func listCopilotModels() []string {
@@ -32,7 +34,7 @@ func listCopilotModels() []string {
 	return models
 }
 
-func Start(isGlobal bool) (Result, error) {
+func Start(t theme.Theme, isGlobal bool) (Result, error) {
 	var result Result
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -59,6 +61,7 @@ func Start(isGlobal bool) (Result, error) {
 		return ollama.RecommendedModels
 	}
 
+	fmt.Println(t.Title.Render("ComAI Init"))
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
