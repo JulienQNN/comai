@@ -26,7 +26,7 @@ func renderFinal(t theme.Theme, msg, authorEmail, authorName, date string) {
 	final := lipgloss.JoinVertical(
 		lipgloss.Left,
 		t.CommitBorder.Render(msg),
-		t.Italic.Render(fmt.Sprintf(" %s <%s>", authorName, authorEmail)),
+		t.Italic.Render(fmt.Sprintf(" %s <%s>", authorEmail, authorName)),
 		t.Italic.PaddingBottom(1).Render(fmt.Sprintf(" %s", date)),
 	)
 	fmt.Println(final)
