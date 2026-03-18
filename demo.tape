@@ -1,15 +1,10 @@
 Output demo.gif
 
 # Set up terminal
-Set FontSize 16
-Set Width 1200
-Set Height 800
+Set FontSize 18
+Set Width 800
+Set Height 600
 Set TypingSpeed 30ms
-
-# Show current state
-Type "git status"
-Enter
-Sleep 2s
 
 Type "git add demo.tape"
 Enter
