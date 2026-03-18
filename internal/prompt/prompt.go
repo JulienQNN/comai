@@ -100,7 +100,7 @@ func filterDiff(raw string) string {
 
 func Build(diff string, cfg config.Config) CompletionParams {
 	system := fmt.Sprintf(
-		"Output ONLY a single-line git commit message in lowercase.Max length: %v characters.Language: %sNo backticks, no formatting, no explanation. Follow the conventional commit format: <type>(<optional scope>): <description>Valid types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revertOmit the scope if not relevant.",
+		"Output ONLY a single-line git commit message in lowercase.Max length: %v characters.Language: %sNo backticks, no formatting, no explanation. Follow the conventional commit format: <type>(<optional scope>): <description>Valid types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert Omit the scope if not relevant.",
 		cfg.CommitMaxLength,
 		cfg.Language,
 	)
